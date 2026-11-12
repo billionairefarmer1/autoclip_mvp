@@ -1,528 +1,281 @@
-# AutoClip - AI-Powered Video Clipping Tool
+# AutoClip — turn long videos into short clips, on your own PC
 
-🎬 An intelligent video clipping and collection recommendation system based on AI, supporting automatic Bilibili video download, subtitle extraction, intelligent slicing, and collection generation.
+AutoClip is a **desktop clipping app** for your computer. Drop in a long video (a podcast, stream, webinar, interview, lecture) and it finds the best moments and exports finished **vertical 9:16 clips with burned-in captions**, ready for Shorts, Reels and TikTok.
 
-## 📋 Table of Contents
+Everything runs locally: no uploads, no accounts, no API keys, no per-minute fees.
 
-- [✨ Features](#-features)
-- [🚀 Quick Start](#-quick-start)
-- [📁 Project Structure](#-project-structure)
-- [🔧 Configuration](#-configuration)
-- [📖 User Guide](#-user-guide)
-- [🛠️ Development Guide](#️-development-guide)
-- [🐛 FAQ](#-faq)
-- [📝 Changelog](#-changelog)
-- [📄 License](#-license)
-- [🤝 Contributing](#-contributing)
-- [📞 Contact](#-contact)
+<p align="center">
+  <b>Drop a video → AutoClip scores the best moments → export ready-to-post clips</b>
+</p>
 
-## ✨ Features
+## ✨ What it does
 
-- 🔥 **Intelligent Video Clipping**: AI-powered video content analysis for high-quality automatic clipping
-- 📺 **Bilibili Video Download**: Support for automatic Bilibili video download and subtitle extraction
-- 🎯 **Smart Collection Recommendations**: AI automatically analyzes slice content and recommends related collections
-- 🎨 **Manual Collection Editing**: Support drag-and-drop sorting, adding/removing slices
-- 📦 **One-Click Package Download**: Support one-click package download for all slices and collections
-- 🌐 **Modern Web Interface**: React + TypeScript + Ant Design
-- ⚡ **Real-time Processing Status**: Real-time display of processing progress and logs
+| | |
+|---|---|
+| 🎯 **Finds the good parts** | Scores every moment for opening hook, self-contained story, pacing, energy and emphasis — then explains *why* each clip was picked. |
+| 🗣️ **Transcribes your video** | Optional local Whisper (faster-whisper), or reuse a `.srt` you already have. No speech model? It still finds clips from audio energy and scene changes. |
+| 📱 **Auto vertical reframe** | Face tracking keeps the speaker in frame for 9:16, with a blurred-background fallback when the shot can't fill the frame. |
+| 💬 **Burned-in captions** | Word-by-word karaoke highlighting, or clean line captions. Fonts are auto-detected so captions never render blank. |
+| 🔊 **Ready for social** | Loudness normalised to −14 LUFS, H.264 + AAC, faststart, 1080×1920 at 30 fps. |
+| ⚡ **Fast** | Uses your GPU's hardware encoder when available, and trims instantly in *Original* mode. |
+| 🔒 **Private** | Your videos never leave the machine. The server only listens on localhost. |
 
-## 🚀 Quick Start
+## 🚀 Quick start (Windows / macOS / Linux)
 
-### Requirements
+You need **Python 3.9+**. Nothing else — FFmpeg is installed automatically as part of the Python packages.
 
-#### Development Environment
-- Python 3.8+
-- Node.js 16+
-- DashScope API Key or SiliconFlow API Key (for AI analysis)
-
-#### Docker Deployment (Recommended)
-- Docker 20.10+
-- Docker Compose 2.0+
-- DashScope API Key or SiliconFlow API Key (for AI analysis)
-
-### Installation
-
-#### 🐳 Docker Deployment (Recommended)
-
-**One-click deployment, no complex environment setup required!**
+### 1. Get the app
 
 ```bash
-# 1. Clone the project
-git clone git@github.com:zhouxiaoka/autoclip_mvp.git
-cd autoclip_mvp
-
-# 2. Configure environment variables
-cp env.example .env
-# Edit .env file and configure your API keys
-
-# 3. One-click deployment
-./docker-deploy.sh
-```
-
-**Access URL**: http://localhost:8000
-
-📖 **Detailed Deployment Guide**: [Docker Deployment Guide](DOCKER_DEPLOY.md)
-
-#### 🔧 Development Environment
-
-1. **Clone the project**
-```bash
-git clone git@github.com:zhouxiaoka/autoclip_mvp.git
+git clone https://github.com/billionairefarmer1/autoclip_mvp.git
 cd autoclip_mvp
 ```
 
-2. **Install backend dependencies**
-```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or venv\Scripts\activate  # Windows
+### 2. Double-click the launcher for your system
 
-# Install dependencies
-pip install -r requirements.txt
+| System | File |
+|---|---|
+| **Windows** | `AutoClip-Windows.bat` |
+| **macOS** | `AutoClip-Mac.command` (right-click → Open the first time) |
+| **Linux** | `AutoClip-Linux.sh` (or `./AutoClip-Linux.sh` in a terminal) |
+
+The launcher creates a private Python environment, installs dependencies, and opens `http://localhost:8000` in your browser. Keep the window open while you work — closing it stops the app.
+
+### 3. Use it
+
+1. **Drop a video** onto the drop zone (or click *Choose a video*).
+2. AutoClip analyses it and lists clip candidates, ranked by score.
+3. Tick the ones you like → **Export** → download your vertical clips.
+
+> **Tip:** the first time you run it, the launcher offers to install automatic transcription. Say **yes** — it makes clip picking dramatically better and enables word-by-line captions. It is a one-time ~120 MB download.
+
+### Prefer the terminal?
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements-studio.txt
+python start.py                   # or: python start.py --help
 ```
 
-3. **Install frontend dependencies**
+Useful flags: `--port 8010`, `--no-browser`, `--dev` (Vite hot reload), `--rebuild-frontend`.
+
+### Try it without footage
+
 ```bash
-cd frontend
-npm install
-cd ..
+python scripts/make_demo_video.py --out demo/demo.mp4 --seconds 90
 ```
 
-4. **Configure API keys**
-```bash
-# Copy example configuration file
-cp data/settings.example.json data/settings.json
+That writes `demo/demo.mp4` plus `demo/demo.srt` — drop the video in and you can walk the whole flow, captions included.
 
-# Edit configuration file and add your API key
-# Choose between DashScope and SiliconFlow APIs:
+## 📋 Requirements
 
-# For DashScope:
-{
-  "api_provider": "dashscope",
-  "dashscope_api_key": "your-dashscope-api-key",
-  "model_name": "qwen-plus",
-  "chunk_size": 5000,
-  "min_score_threshold": 0.7,
-  "max_clips_per_collection": 5,
-  "default_browser": "chrome"
-}
+| | |
+|---|---|
+| **Python** | 3.9 or newer |
+| **OS** | Windows 10/11, macOS 11+, or a modern Linux desktop |
+| **Disk** | ~250 MB for the app; videos and clips take as much as you make |
+| **Node.js** | Only needed to rebuild the UI from source (the launcher does this once) |
+| **GPU** | Optional — NVIDIA/Apple/Intel/AMD hardware encoding is detected and used automatically |
 
-# For SiliconFlow:
-{
-  "api_provider": "siliconflow",
-  "siliconflow_api_key": "your-siliconflow-api-key",
-  "siliconflow_model": "Qwen/Qwen2.5-72B-Instruct",
-  "chunk_size": 5000,
-  "min_score_threshold": 0.7,
-  "max_clips_per_collection": 5,
-  "default_browser": "chrome"
-}
+## 🧠 How clip selection works
+
+AutoClip runs a five-stage pipeline locally, with no LLM calls:
+
+1. **Transcribe** — local Whisper (`faster-whisper`) with word timings, or your own `.srt`.
+2. **Listen** — decode the audio track and compute energy, speech/silence, spectral change and emphasis at 50 ms resolution.
+3. **Watch** — detect scene changes so cuts land on visual boundaries.
+4. **Build candidates** — pack whole sentences into clip-sized windows, snapping boundaries to pauses and cuts. Clips never begin or end mid-word.
+5. **Score & de-overlap** — blend six explainable signals:
+
+| Signal | What it measures |
+|---|---|
+| `hook` | Does the first ~8 seconds earn attention? (questions, numbers, strong openers) |
+| `completeness` | Does the clip start and finish a thought, with a payoff? |
+| `pacing` | Words per second and dead air |
+| `energy` | Loudness and dynamics (passion vs. noise) |
+| `emphasis` | Peaks and spectrum swings on key lines |
+| `length` | Fit to the ideal short-form length you set |
+
+Every number is visible in the UI, and each clip carries plain-English reasons. Tune the thresholds in **Studio → Settings**.
+
+## 🎬 What the export does
+
+```
+source.mp4 ──trim──▶ reframe ──▶ captions ──▶ loudness ──▶ clip.mp4
 ```
 
-### Start Services
+* **Trim** — frame-accurate seek. *Original* mode first tries a stream copy (instant) and re-encodes only if the cut would land visibly wrong.
+* **Reframe** — Haar-cascade face detection samples the clip, then an EMA-smoothed piecewise-linear crop path follows the speaker. One FFmpeg pass, no intermediate renders. Falls back to centred crop, or blurred background fill.
+* **Captions** — ASS subtitles with karaoke timing, fonts resolved to an installed family (libass silently drops unknown fonts, so AutoClip checks).
+* **Loudness** — one-pass `loudnorm` to −14 LUFS / −1.5 dBTP.
+* **Encode** — hardware encoder if one actually works (it is *tested*, not just listed), otherwise x264 CRF 20.
 
-#### Method 1: Using startup script (Recommended)
-```bash
-chmod +x start_dev.sh
-./start_dev.sh
-```
-
-#### Method 2: Manual startup
-```bash
-# Start backend service
-source venv/bin/activate
-python backend_server.py
-
-# Open new terminal, start frontend service
-cd frontend
-npm run dev
-```
-
-#### Method 3: Command line tool
-```bash
-# Process local video files
-python main.py --video input.mp4 --srt input.srt --project-name "My Project"
-
-# Process existing project
-python main.py --project-id <project_id>
-
-# List all projects
-python main.py --list-projects
-```
-
-### Access URLs
-
-#### Docker Deployment
-- 🌐 **Frontend Interface**: http://localhost:8000
-- 📚 **API Documentation**: http://localhost:8000/docs
-
-#### Development Environment
-- 🌐 **Frontend Interface**: http://localhost:3000
-- 🔌 **Backend API**: http://localhost:8000
-- 📚 **API Documentation**: http://localhost:8000/docs
-
-## 📁 Project Structure
+## 📁 Where your files live
 
 ```
 autoclip_mvp/
-├── backend_server.py          # FastAPI backend service
-├── main.py                   # Command line entry
-├── start_dev.sh              # Development environment startup script
-├── requirements.txt           # Python dependencies
-├── .gitignore               # Git ignore file
-├── README.md                # Project documentation
-│
-├── Dockerfile               # Docker image build file
-├── docker-compose.yml       # Docker Compose configuration
-├── docker-compose.prod.yml  # Production Docker configuration
-├── docker-deploy.sh         # Docker one-click deployment script
-├── docker-deploy-prod.sh    # Production deployment script
-├── test-docker.sh           # Docker environment test script
-├── env.example              # Environment variables example file
-├── .dockerignore           # Docker build ignore file
-│
-├── frontend/                # React frontend
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API services
-│   │   ├── store/          # State management
-│   │   └── hooks/          # Custom Hooks
-│   ├── package.json        # Frontend dependencies
-│   └── vite.config.ts      # Vite configuration
-│
-├── src/                    # Core business logic
-│   ├── main.py            # Main processing logic
-│   ├── config.py          # Configuration management
-│   ├── api.py             # API interfaces
-│   ├── pipeline/          # Processing pipeline
-│   │   ├── step1_outline.py    # Outline extraction
-│   │   ├── step2_timeline.py   # Timeline generation
-│   │   ├── step3_scoring.py    # Score calculation
-│   │   ├── step4_title.py      # Title generation
-│   │   ├── step5_clustering.py # Clustering analysis
-│   │   └── step6_video.py      # Video generation
-│   ├── utils/             # Utility functions
-│   │   ├── llm_client.py      # DashScope AI client
-│   │   ├── siliconflow_client.py # SiliconFlow AI client
-│   │   ├── llm_factory.py     # LLM client factory
-│   │   ├── video_processor.py # Video processing
-│   │   ├── text_processor.py  # Text processing
-│   │   ├── project_manager.py # Project management
-│   │   ├── error_handler.py   # Error handling
-│   │   └── bilibili_downloader.py # Bilibili downloader
-│   └── upload/            # File upload
-│       └── upload_manager.py
-│
-├── data/                  # Data files
-│   ├── projects.json     # Project data
-│   └── settings.json     # Configuration file
-│
-├── uploads/              # Upload file storage
-│   ├── tmp/             # Temporary download files
-│   └── {project_id}/    # Project files
-│       ├── input/       # Original files
-│       └── output/      # Processing results
-│           ├── clips/   # Sliced videos
-│           └── collections/ # Collection videos
-│
-├── prompt/               # AI prompt templates
-│   ├── business/        # Business & Finance
-│   ├── knowledge/       # Knowledge & Science
-│   ├── entertainment/   # Entertainment content
-│   └── ...
-│
-└── tests/               # Test files
-    ├── test_config.py
-    └── test_error_handler.py
+├── uploads/studio/<job-id>/
+│   ├── source.mp4          # your original video
+│   ├── work/               # transcript.json, transcript.srt, scenes.json, analysis.json
+│   └── clips/              # exported MP4s + thumbnails + clips.json
+└── data/studio/
+    ├── jobs.json           # project list (resumable after restart)
+    └── settings.json       # studio preferences
 ```
 
-## 🔧 Configuration
+All of this is git-ignored and never leaves your machine. Deleting a project in the UI removes its folder.
 
-### API Key Configuration
-Configure your API keys in `data/settings.json`. You can choose between DashScope and SiliconFlow APIs:
+## 🗂️ Project structure
 
-#### DashScope Configuration
-```json
-{
-  "api_provider": "dashscope",
-  "dashscope_api_key": "your-dashscope-api-key",
-  "model_name": "qwen-plus",
-  "chunk_size": 5000,
-  "min_score_threshold": 0.7,
-  "max_clips_per_collection": 5,
-  "default_browser": "chrome"
-}
+```
+autoclip_mvp/
+├── AutoClip-Windows.bat / .command / .sh   # one-click launchers
+├── start.py                     # desktop launcher (venv, ffmpeg, build, server)
+├── backend_server.py            # FastAPI app: Studio API + legacy AI pipeline
+├── scripts/make_demo_video.py   # synthetic test footage generator
+│
+├── src/
+│   ├── media/       # FFmpeg discovery (bundled/system), probing, progress parsing
+│   ├── transcribe/  # Whisper backends, SRT/VTT parsing, transcript model
+│   ├── analysis/    # audio signals, scene detection, candidate scoring
+│   ├── reframe/     # face tracking, crop-path planning, crop expressions
+│   ├── captions/    # ASS generation, fonts, karaoke timing
+│   ├── export/      # encoder choice, filter graph, rendering, thumbnails
+│   ├── pipeline/    # offline.py (analyze + render) and the legacy AI steps
+│   └── studio/      # job store, background worker, REST API, settings
+│
+├── frontend/src/
+│   ├── pages/       # StudioPage, StudioJobPage, StudioSettingsPage (+ legacy pages)
+│   └── components/studio/  # UploadPanel, JobCard, StatusPill
+└── tests/           # 114 tests: parsing, scoring, reframing, rendering, API
 ```
 
-#### SiliconFlow Configuration
-```json
-{
-  "api_provider": "siliconflow",
-  "siliconflow_api_key": "your-siliconflow-api-key",
-  "siliconflow_model": "Qwen/Qwen2.5-72B-Instruct",
-  "chunk_size": 5000,
-  "min_score_threshold": 0.7,
-  "max_clips_per_collection": 5,
-  "default_browser": "chrome"
-}
+## 🔌 API
+
+The desktop UI is a thin client over a documented REST API — useful if you want to script AutoClip.
+
+```
+GET    /api/studio/health                     capability report (ffmpeg, ASR, fonts, encoders)
+GET    /api/studio/settings                   read settings
+PUT    /api/studio/settings                   update settings
+POST   /api/studio/jobs                       upload a video (multipart) → job
+POST   /api/studio/jobs/{id}/analyze          find clips (background)
+POST   /api/studio/jobs/{id}/render           export clips (background)
+GET    /api/studio/jobs/{id}                  status, progress, clips
+GET    /api/studio/jobs/{id}/clips/{cid}/video        stream an exported clip
+GET    /api/studio/jobs/{id}/clips/{cid}/download     download it
+GET    /api/studio/jobs/{id}/clips/{cid}/srt          caption file for the clip
+GET    /api/studio/jobs/{id}/transcript?format=srt    full transcript
+GET    /api/studio/jobs/{id}/download-all            zip of every export
 ```
 
-#### Getting API Keys
-- **DashScope**: Visit [Alibaba Cloud Console](https://dashscope.console.aliyun.com/) → AI Services → Tongyi Qianwen → API Key Management
-- **SiliconFlow**: Visit [SiliconCloud](https://siliconflow.cn) → Login → API Keys → Create New API Key
+Interactive docs: <http://localhost:8000/docs>
 
-### Browser Configuration
-Support for Chrome, Firefox, Safari and other browsers for Bilibili video download:
-```json
-{
-  "default_browser": "chrome"
-}
-```
+### CLI usage
 
-## 📖 User Guide
-
-### 1. Upload Local Video
-1. Visit http://localhost:3000
-2. Click "Upload Video" button
-3. Select video file and subtitle file (required)
-4. Fill in project name and category
-5. Click "Start Processing"
-
-### 2. Download Bilibili Video
-1. Click "Bilibili Video Download" on homepage
-2. Enter Bilibili video link (must be a video with subtitles)
-3. Select browser (for login status)
-4. Click "Start Download"
-
-### 3. Edit Collections
-1. Enter project detail page
-2. Click collection card to enter edit mode
-3. Drag and drop slices to adjust order
-4. Add or remove slices
-5. Save changes
-
-### 4. Download Project
-1. Click download button on project card
-2. Automatically package all slices and collections
-3. Download complete zip file
-
-## 🐳 Docker Deployment
-
-### Quick Deployment
 ```bash
-# 1. Clone the project
-git clone git@github.com:zhouxiaoka/autoclip_mvp.git
-cd autoclip_mvp
+# Check the environment without starting the server
+python -c "from src.media.ffmpeg import ffmpeg_version; print(ffmpeg_version())"
 
-# 2. Configure environment variables
-cp env.example .env
-# Edit .env file and configure your API keys
+# Generate test footage
+python scripts/make_demo_video.py --seconds 60
 
-# 3. One-click deployment
-./docker-deploy.sh
+# Batch: analyse a folder and export every candidate clip
+python - <<'PY'
+from src.pipeline.offline import analyze, render_clips, AnalyzeOptions, RenderOptions
+res = analyze("interview.mp4", "work/interview", AnalyzeOptions(srt_path="interview.srt"))
+render_clips("interview.mp4", res.clips, "exports/interview", "work/interview",
+             options=RenderOptions(mode="vertical", captions=True))
+PY
 ```
 
-### Production Deployment
+## 🛠️ Development
+
 ```bash
-# Use production environment configuration
-./docker-deploy-prod.sh
+# Backend (auto-reload)
+python start.py --reload
+
+# Frontend with hot reload (proxies /api to :8000)
+cd frontend && npm install && npm run dev
+
+# Tests (114 tests, includes real FFmpeg renders)
+pytest tests/ -v
+
+# Type-check + build the UI
+cd frontend && npx tsc --noEmit && npm run build
 ```
 
-### Common Docker Commands
+**Adding a transcription backend:** implement a function in `src/transcribe/whisper_backends.py` returning a `Transcript`, then register it in `engine.py`. Audio-only mode must always remain functional.
+
+**Adding a score signal:** add a component in `src/analysis/candidates.py` (`_score_window`), include it in the weights, and add a row to `SCORE_LABELS` in the UI so users can see it.
+
+## ⚠️ Notes and limits
+
+* Clips are only as good as the audio — noisy recordings confuse both speech detection and scoring. Use a lav mic when you can.
+* Face tracking uses classic Haar cascades: excellent for frontal talking-head footage, weaker for profiles and crowded shots (it then keeps a centred crop, which is fine).
+* Captions need a transcript. Without one you still get cuts, just no text.
+* Very long videos (2 h+) work but take time: transcription dominates, roughly 5–15× realtime on a modern CPU with `base`.
+* AutoClip is a desktop tool served over localhost. Do not expose port 8000 to the internet — there is no authentication.
+
+## 🧩 Legacy: AI project pipeline (optional)
+
+The original AutoClip feature set is still available under **AI Projects** in the header. It uses a cloud LLM (DashScope / Qwen or SiliconFlow) to outline a video, score moments, write titles and group clips into collections, plus Bilibili downloading.
+
+It is **entirely optional** and separate from Studio: nothing in the desktop clipping flow calls it, and no API key is needed unless you open that tab.
+
 ```bash
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Restart services
-docker-compose restart
-
-# Update services
-docker-compose pull && docker-compose up -d
-
-# Test Docker environment
-./test-docker.sh
+# one-off setup for the legacy pipeline only
+cp data/settings.example.json data/settings.json   # add your API key
+pytest tests/ -v                                    # covers both pipelines
 ```
 
-### Environment Variables Configuration
-Configure in `.env` file:
+Use it if you already have an LLM provider and want AI-written titles/collection groupings. For everything else, Studio's offline engine is faster, free and private.
+
+## 🐳 Docker (optional)
+
 ```bash
-# Choose one API provider
-DASHSCOPE_API_KEY=your-dashscope-api-key
-# or
-SILICONFLOW_API_KEY=your-siliconflow-api-key
-
-# API provider selection
-API_PROVIDER=dashscope  # or siliconflow
+cp env.example .env      # only needed for the legacy AI pipeline
+docker compose up --build
 ```
 
-📖 **Detailed Docker Deployment Guide**: [Docker Deployment Guide](DOCKER_DEPLOY.md)
-
-## 🛠️ Development Guide
-
-### Backend Development
-```bash
-# Start development server (with hot reload)
-python backend_server.py
-
-# Run tests
-pytest tests/
-```
-
-### Frontend Development
-```bash
-cd frontend
-npm run dev    # Development mode
-npm run build  # Production build
-npm run lint   # Code linting
-```
-
-### Adding New Video Categories
-1. Create new category folder in `prompt/` directory
-2. Add corresponding prompt template files
-3. Add category options in frontend `src/services/api.ts`
-
-## 📝 Changelog
-
-### [v1.1.1] - 2025-08-17
-
-#### 🐳 Docker Deployment
-- **🚀 One-Click Docker Deployment**: Support for Docker containerized deployment, simplifying environment setup
-- **🏗️ Multi-Stage Build**: Optimized Docker image size and improved build efficiency
-- **🔧 Production Environment Support**: Provided production Docker configuration and deployment scripts
-- **📦 Data Persistence**: Support for volume mounting to ensure data security
-- **🛡️ Health Checks**: Integrated container health checks for improved service reliability
-- **📚 Deployment Documentation**: Comprehensive Docker deployment guides and quick start documentation
-
-#### 🛠️ Technical Improvements
-- **🔧 Backend Optimization**: Enhanced static file serving for Docker environment
-- **🎨 Frontend Build**: Optimized production build configuration
-- **📋 Environment Management**: Improved environment variable configuration system
-- **🔍 Testing**: Added Docker environment testing scripts
+The image includes FFmpeg and a caption font. Exports land in `uploads/studio/` via a volume mount.
 
 ---
 
-### [v1.1.0] - 2025-08-03
+## 🐛 Troubleshooting
 
-#### ✨ New Features
-- **🔌 SiliconFlow API Support**: Added support for SiliconFlow API as an alternative to DashScope
-- **🎛️ Multi-API Provider Selection**: Users can now choose between DashScope and SiliconFlow APIs
-- **🔄 Dynamic UI**: Frontend settings page now dynamically shows configuration options based on selected API provider
-- **🧪 API Connection Testing**: Added built-in API connection testing functionality for both providers
+**The launcher says FFmpeg was not found.**
+Run `pip install imageio-ffmpeg` in the same environment. Or install FFmpeg system-wide and make sure `ffmpeg -version` works in a terminal. A custom path can be set with the `AUTOCLIP_FFMPEG` environment variable.
 
-#### 🔧 Improvements
-- **🏭 LLM Factory Pattern**: Implemented unified LLM client factory for better API management
-- **⚙️ Enhanced Configuration**: Extended configuration system to support multiple API providers
-- **🎨 Improved UI/UX**: Better form validation and user experience in settings page
-- **📝 Better Documentation**: Added comprehensive integration guides and troubleshooting
+**Captions are missing from the export.**
+Captions need a transcript — check the project page: if it says *audio only*, install `faster-whisper` or attach a `.srt` and re-analyse. If the transcript exists but text looks blank, your chosen caption font is not installed; clear *Caption font family* in Settings to fall back to auto-detection.
 
-#### 🐛 Bug Fixes
-- **🔧 Fixed API Testing**: Resolved issues with API connection testing functionality
-- **🎯 Fixed Configuration Loading**: Improved configuration loading and validation
-- **🔄 Fixed Provider Switching**: Fixed issues with API provider switching in frontend
+**Clips are boring / picked from the wrong places.**
+Install a speech model (transcription is by far the biggest quality jump), or raise *Minimum score*, shorten *Target length*, and set *Language* explicitly. Noisy audio hurts every signal — clean audio matters most.
 
-#### 🛠️ Technical Changes
-- **📦 New Dependencies**: Added `openai` library for SiliconFlow API support
-- **🏗️ Architecture**: Implemented factory pattern for LLM client management
-- **🔧 Configuration**: Extended settings model to support multiple API providers
-- **📱 Frontend**: Enhanced settings page with conditional rendering and better validation
+**Exports are slow.**
+Leave *Use hardware encoder* on. In Settings, keep CRF around 20–23, and prefer 1080×1920 over 4K output. *Original* mode is nearly instant because it stream-copies.
 
-#### 📋 Supported Models
+**"This job is already processing."**
+Only one job runs at a time by design (FFmpeg saturates the CPU). Wait for the current one, or restart the app — interrupted jobs are marked *Interrupted* and can be re-analysed.
 
-**DashScope (Tongyi Qianwen)**:
-- Qwen Plus
-- Qwen Turbo
-- Qwen Max
+**Port 8000 is busy.**
+`python start.py --port 8010`, or let the launcher pick the next free port automatically (`--port` is a preference, not a requirement).
 
-**SiliconFlow (Silicon Cloud)**:
-- Qwen2.5-72B-Instruct
-- Qwen3-8B
-- DeepSeek-R1
+**Nothing appears in my browser.**
+The launcher prints the exact URL. If the UI was never built, run `cd frontend && npm install && npm run build`, or start with `python start.py --rebuild-frontend`.
 
----
-
-### [v1.0.0] - 2025-07-XX
-
-#### ✨ Initial Release
-- **🎬 AI-Powered Video Clipping**: Intelligent video content analysis and automatic clipping
-- **📺 Bilibili Video Download**: Support for automatic Bilibili video download and subtitle extraction
-- **🎯 Smart Collection Recommendations**: AI automatically analyzes slice content and recommends related collections
-- **🎨 Manual Collection Editing**: Support drag-and-drop sorting, adding/removing slices
-- **📦 One-Click Package Download**: Support one-click package download for all slices and collections
-- **🌐 Modern Web Interface**: React + TypeScript + Ant Design
-- **⚡ Real-time Processing Status**: Real-time display of processing progress and logs
-
----
-
-## 🐛 FAQ
-
-### Q: How do I choose between DashScope and SiliconFlow APIs?
-A: Both APIs provide similar AI capabilities. DashScope is from Alibaba Cloud, while SiliconFlow offers access to multiple AI models. Choose based on your needs and API availability.
-
-### Q: Bilibili video download failed?
-A: Make sure you're logged into your Bilibili account and select the correct browser. Chrome browser is recommended.
-
-### Q: AI analysis is slow?
-A: You can adjust the `chunk_size` parameter. Smaller values will improve speed but may affect quality.
-
-### Q: Slice quality is not good?
-A: Adjust the `min_score_threshold` parameter. Higher values will improve slice quality but reduce quantity.
-
-### Q: Too few collections?
-A: Adjust the `max_clips_per_collection` parameter to increase the maximum number of slices per collection.
-
-### Q: Docker deployment failed?
-A: First run `./test-docker.sh` to check your Docker environment. Make sure Docker and Docker Compose are properly installed, and API keys are configured in the `.env` file.
-
-### Q: Cannot access Docker container?
-A: Check if the port is occupied: `netstat -tulpn | grep 8000`. If the port is occupied, you can modify the port mapping in `docker-compose.yml`.
-
-### Q: Data lost after Docker deployment?
-A: Make sure the data directories are properly mounted. Check the volumes configuration in `docker-compose.yml`. Data will be saved in the host machine's `./uploads/` and `./output/` directories.
-
-### Q: How to deploy in production environment?
-A: Use the `./docker-deploy-prod.sh` script for production deployment. This script will use port 80 and configure automatic restart and log management.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Welcome to submit Issues and Pull Requests!
-
-1. Fork this project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📞 Contact
-
-For questions or suggestions, please contact us through:
-
-### 💬 QQ  
-<img src="./qq_qr.jpg" alt="QQ QR Code" width="150">
-
-### 📱 Feishu  
-<img src="./feishu_qr.jpg" alt="Feishu QR Code" width="150">
-
-### 📧 Other Contact Methods
-- Submit a [GitHub Issue](https://github.com/zhouxiaoka/autoclip_mvp/issues)
-- Send email to: christine_zhouye@163.com
-- Add the above QQ or Feishu contact
-
-## 🤝 Contributing
-
-Welcome to contribute code! Please see [Contributing Guide](CONTRIBUTING.md) for details.
+**Windows SmartScreen warns about the .bat file.**
+It is a plain text batch file you can open in Notepad. Click *More info → Run anyway*, or run `python start.py` directly.
 
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## 🤝 Contributing
+
+Welcome to contribute code! Please see [Contributing Guide](CONTRIBUTING.md) for details.
 
 ---
 

@@ -22,10 +22,12 @@ FROM python:3.11-slim
 # 设置工作目录
 WORKDIR /app
 
-# 安装系统依赖 (包括FFmpeg)
-RUN apt-get update && apt-get install -y \
+# 安装系统依赖 (包括FFmpeg与字幕渲染所需的字体)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
+    fonts-dejavu-core \
+    libass9 \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制Python依赖文件
@@ -38,12 +40,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 COPY backend_server.py ./
 COPY main.py ./
+COPY start.py ./
+COPY scripts/ ./scripts/
 
 # 复制构建好的前端文件
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # 创建必要的目录
-RUN mkdir -p input output/clips output/collections output/metadata uploads data
+RUN mkdir -p input output/clips output/collections output/metadata \
+    uploads data data/studio frontend/dist demo
 
 # 复制配置文件
 COPY data/settings.example.json ./data/settings.json

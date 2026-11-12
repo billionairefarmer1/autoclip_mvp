@@ -1,6 +1,6 @@
 import React from 'react'
-import { Layout, Button } from 'antd'
-import { SettingOutlined, HomeOutlined } from '@ant-design/icons'
+import { Layout, Button, Segmented } from 'antd'
+import { SettingOutlined, ScissorOutlined, AppstoreOutlined } from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const { Header: AntHeader } = Layout
@@ -8,16 +8,18 @@ const { Header: AntHeader } = Layout
 const Header: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const isHomePage = location.pathname === '/'
+  const inStudio = !location.pathname.startsWith('/project')
+  const section = inStudio ? 'studio' : 'projects'
 
   return (
-    <AntHeader 
+    <AntHeader
       className="glass-effect"
-      style={{ 
-        padding: '0 32px',
+      style={{
+        padding: '0 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        gap: 16,
         height: '72px',
         position: 'sticky',
         top: 0,
@@ -28,23 +30,13 @@ const Header: React.FC = () => {
       }}
     >
       {/* Logo */}
-      <div 
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          cursor: 'pointer',
-          transition: 'all 0.2s ease'
-        }}
-        onClick={() => navigate('/')}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)'
-        }}
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}
       >
         <span
+          onClick={() => navigate('/')}
           style={{
+            cursor: 'pointer',
             fontSize: '24px',
             fontWeight: '700',
             background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -54,37 +46,33 @@ const Header: React.FC = () => {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             letterSpacing: '-0.5px',
             textShadow: '0 0 20px rgba(79, 172, 254, 0.3)',
-            filter: 'drop-shadow(0 2px 4px rgba(79, 172, 254, 0.2))'
+            filter: 'drop-shadow(0 2px 4px rgba(79, 172, 254, 0.2))',
+            transition: 'transform 0.2s ease'
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
         >
           AutoClip
         </span>
+
+        <Segmented
+          size="middle"
+          value={section}
+          onChange={(value) => navigate(value === 'studio' ? '/' : '/projects')}
+          options={[
+            { label: <span style={{ padding: '0 4px' }}><ScissorOutlined /> Studio</span>, value: 'studio' },
+            { label: <span style={{ padding: '0 4px' }}><AppstoreOutlined /> AI Projects</span>, value: 'projects' },
+          ]}
+          style={{ background: 'rgba(0,0,0,0.3)' }}
+        />
       </div>
-      
+
       {/* Navigation Buttons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {!isHomePage && (
-          <Button 
-            type="primary"
-            icon={<HomeOutlined />}
-            onClick={() => navigate('/')}
-            style={{
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              border: 'none',
-              borderRadius: '8px',
-              height: '40px',
-              padding: '0 20px',
-              fontWeight: 500,
-              boxShadow: '0 2px 8px rgba(79, 172, 254, 0.3)'
-            }}
-          >
-            返回首页
-          </Button>
-        )}
-        <Button 
-          type="text" 
+        <Button
+          type="text"
           icon={<SettingOutlined />}
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate(inStudio ? '/studio/settings' : '/legacy-settings')}
           style={{
             color: '#cccccc',
             border: '1px solid transparent',
@@ -101,7 +89,7 @@ const Header: React.FC = () => {
             e.currentTarget.style.borderColor = 'transparent'
           }}
         >
-          设置
+          Settings
         </Button>
       </div>
     </AntHeader>

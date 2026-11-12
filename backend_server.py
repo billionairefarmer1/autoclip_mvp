@@ -347,16 +347,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 静态文件服务
+# 静态文件服务（目录不存在时自动创建，避免首次启动失败）
+for _dir in ("output", "uploads"):
+    Path(_dir).mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory="output"), name="static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# 桌面剪辑工作台 API (Desktop clipping studio)
+try:
+    from src.studio.api import router as studio_router
+    app.include_router(studio_router)
+    print("✅ Studio API mounted at /api/studio")
+except Exception as exc:  # pragma: no cover - keep the legacy app usable
+    import traceback
+    traceback.print_exc()
+    print(f"⚠️  Studio API could not be mounted: {exc}")
+
 # API路由
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def root():
-    """根路径"""
-    return {"message": "自动切片工具 API 服务", "version": "1.0.0"}
+    """根路径：优先返回打包后的前端应用（桌面模式），否则返回 API 信息"""
+    for index_path in ("./frontend/dist/index.html", "./frontend/index.html"):
+        if os.path.exists(index_path):
+            # 不缓存 HTML，避免升级前端后浏览器仍打开旧版本
+            return FileResponse(
+                index_path,
+                headers={"Cache-Control": "no-store, must-revalidate"},
+            )
+    return {"message": "自动切片工具 API 服务", "version": "1.0.0", "studio": "/api/studio/health"}
 
 @app.get("/api/video-categories")
 async def get_video_categories():
@@ -1816,15 +1835,20 @@ async def serve_spa(full_path: str):
         else:
             raise HTTPException(status_code=404, detail="静态资源不存在")
     
-    # 其他所有路径都返回前端index.html
-    index_path = "./frontend/dist/index.html"
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    else:
-        # 如果前端文件不存在，重定向到开发服务器
-        from fastapi.responses import RedirectResponse
-        frontend_url = f"http://localhost:3000/{full_path}"
-        return RedirectResponse(url=frontend_url, status_code=302)
+    # 其他所有路径都返回前端index.html（优先使用打包后的前端）
+    for index_path in ("./frontend/dist/index.html", "./frontend/index.html"):
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+
+    # 前端尚未构建：给出可执行的提示，而不是跳转到可能未启动的dev服务器
+    return JSONResponse(
+        status_code=503,
+        content={
+            "error": "Frontend is not built",
+            "hint": "Run `npm install && npm run build` inside ./frontend, "
+                    "or start the app with `python start.py`.",
+        },
+    )
 
 if __name__ == "__main__":
     # 确保必要的目录存在

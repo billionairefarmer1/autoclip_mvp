@@ -77,6 +77,12 @@ uploads/*/
 !uploads/.gitkeep
 !uploads/tmp/
 
+# AutoClip Studio: source videos, rendered clips and job state stay local
+uploads/studio/
+data/studio/
+demo/
+frontend/dist/
+
 # Temporary download files
 uploads/tmp/*.zip
 

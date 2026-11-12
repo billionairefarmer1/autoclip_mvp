@@ -170,7 +170,7 @@ const ProcessingPage: React.FC = () => {
                 </div>
                 <Progress 
                   percent={status.progress} 
-                  status={status.status === 'completed' ? 'success' : 'active'}
+                  status={(status.status as string) === 'completed' ? 'success' : 'active'}
                   strokeColor={{
                     '0%': '#108ee9',
                     '100%': '#87d068',
@@ -186,7 +186,7 @@ const ProcessingPage: React.FC = () => {
               <Steps 
                 direction="vertical" 
                 current={status.current_step}
-                status={status.status === 'error' ? 'error' : 'process'}
+                status={(status.status as string) === 'error' ? 'error' : 'process'}
               >
                 {steps.map((step, index) => (
                   <Step

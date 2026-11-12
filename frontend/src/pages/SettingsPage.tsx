@@ -87,10 +87,10 @@ const SettingsPage: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      const data = await settingsApi.getSettings()
-      form.setFieldsValue(data)
-      if (data.default_browser) setSelectedBrowser(data.default_browser)
-      if (data.api_provider) setSelectedProvider(data.api_provider)
+      const data = (await settingsApi.getSettings()) as Record<string, unknown>
+      form.setFieldsValue(data as any)
+      if (data.default_browser) setSelectedBrowser(String(data.default_browser))
+      if (data.api_provider) setSelectedProvider(String(data.api_provider))
     } catch (error) {
       message.error('加载配置失败')
       console.error('Load settings error:', error)

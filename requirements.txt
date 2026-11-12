@@ -1,33 +1,49 @@
-# 核心依赖
+# ---------------------------------------------------------------------------
+# AutoClip - core runtime
+# ---------------------------------------------------------------------------
 fastapi==0.104.1
-uvicorn==0.24.0
+uvicorn[standard]==0.24.0
 python-multipart==0.0.6
-dashscope==1.23.5
-openai>=1.0.0
-pydub==0.25.1
-pysrt==1.1.2
-
-# 数据处理
 pydantic==2.11.7
 python-dotenv==1.1.1
-
-# 文件处理
 aiofiles==23.2.1
-
-# 网络请求
 requests==2.32.4
 aiohttp==3.12.13
-
-# 加密和安全
 cryptography==42.0.5
 
-# B站相关工具
+# ---------------------------------------------------------------------------
+# Clipping engine (AutoClip Studio)
+# ---------------------------------------------------------------------------
+# Bundled static FFmpeg, so no separate install is required.
+imageio-ffmpeg>=0.6.0
+# Frame maths for audio analysis and face tracking.
+numpy>=1.24,<3
+# Face detection for automatic 9:16 reframing (headless: no GUI libraries).
+opencv-python-headless==4.10.0.84
+
+# ---------------------------------------------------------------------------
+# Subtitle / audio helpers
+# ---------------------------------------------------------------------------
+pysrt==1.1.2
+pydub==0.25.1
+
+# ---------------------------------------------------------------------------
+# Optional: legacy AI pipeline (requires an API key)
+# ---------------------------------------------------------------------------
+dashscope==1.23.5
+openai>=1.0.0
 yt-dlp>=2023.12.30
 
-# 测试依赖
+# ---------------------------------------------------------------------------
+# Optional: automatic speech recognition (uncomment ONE)
+# ---------------------------------------------------------------------------
+# faster-whisper>=1.0.0        # recommended: fast on CPU, no PyTorch needed
+# openai-whisper>=20231117     # reference implementation (needs PyTorch)
+
+# ---------------------------------------------------------------------------
+# Development
+# ---------------------------------------------------------------------------
 pytest==8.0.0
 pytest-cov==4.1.0
 pytest-mock==3.12.0
-
-# 开发工具
 watchfiles==1.1.0

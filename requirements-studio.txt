@@ -1,0 +1,18 @@
+# Minimal install for the offline clipping studio (no AI API keys needed).
+#   pip install -r requirements-studio.txt
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.11.7
+python-dotenv==1.1.1
+aiofiles==23.2.1
+requests==2.32.4
+imageio-ffmpeg>=0.6.0
+numpy>=1.24,<3
+opencv-python-headless==4.10.0.84
+pysrt==1.1.2
+pydub==0.25.1
+
+# Automatic speech recognition (recommended): local Whisper, CPU friendly.
+# Remove this line to run in audio-only mode.
+faster-whisper>=1.0.0
