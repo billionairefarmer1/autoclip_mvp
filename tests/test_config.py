@@ -2,6 +2,7 @@
 配置管理系统单元测试
 """
 import pytest
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -78,12 +79,16 @@ class TestConfigManager:
         assert isinstance(path_config, PathConfig)
         assert path_config.project_root.exists()
     
-    def test_update_api_key(self):
-        """测试更新API密钥"""
+    def test_update_api_key(self, tmp_path, monkeypatch):
+        """测试更新API密钥 —— 写入临时目录，避免污染仓库内的 data/settings.json"""
+        monkeypatch.setattr('src.config.PROJECT_ROOT', tmp_path)
+        (tmp_path / 'data').mkdir()
         test_key = 'new_test_key'
         self.config_manager.update_api_key(test_key)
         assert self.config_manager.settings.dashscope_api_key == test_key
         assert os.environ.get('DASHSCOPE_API_KEY') == test_key
+        saved = json.loads((tmp_path / 'data' / 'settings.json').read_text(encoding='utf-8'))
+        assert saved['dashscope_api_key'] == test_key
     
     def test_export_config(self):
         """测试导出配置"""
