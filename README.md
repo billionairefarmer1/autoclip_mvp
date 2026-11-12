@@ -199,8 +199,14 @@ python start.py --reload
 # Frontend with hot reload (proxies /api to :8000)
 cd frontend && npm install && npm run dev
 
-# Tests (114 tests, includes real FFmpeg renders)
+# Dev tooling (pytest, flake8) is kept out of the runtime install
+pip install -r requirements-dev.txt
+
+# Tests (116 tests, includes real FFmpeg renders)
 pytest tests/ -v
+
+# The same lint gate CI runs
+flake8 src/ tests/ start.py backend_server.py scripts/ --select=E9,F63,F7,F82
 
 # Type-check + build the UI
 cd frontend && npx tsc --noEmit && npm run build

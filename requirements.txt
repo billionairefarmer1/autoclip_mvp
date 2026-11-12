@@ -41,9 +41,6 @@ yt-dlp>=2023.12.30
 # openai-whisper>=20231117     # reference implementation (needs PyTorch)
 
 # ---------------------------------------------------------------------------
-# Development
+# Development tools (pytest, flake8) live in requirements-dev.txt - they are
+# not needed to clip videos and are not installed by the one-click launchers.
 # ---------------------------------------------------------------------------
-pytest==8.0.0
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-watchfiles==1.1.0

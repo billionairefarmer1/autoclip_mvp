@@ -26,16 +26,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-studio.txt
-        pip install pytest pytest-cov httpx dashscope yt-dlp
+        pip install -r requirements-studio.txt -r requirements-dev.txt
+        # Legacy backend imports these at module load; the offline Studio does not.
+        pip install httpx dashscope yt-dlp
 
     - name: Run tests
       run: python -m pytest tests/ -v --tb=short
 
     - name: Lint (undefined names / syntax)
-      run: |
-        pip install flake8
-        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+      run: flake8 src/ tests/ start.py backend_server.py scripts/ --count --select=E9,F63,F7,F82 --show-source --statistics
 
   frontend-build:
     runs-on: ubuntu-latest
