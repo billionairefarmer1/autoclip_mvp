@@ -149,6 +149,50 @@ def test_render_blur_fallback(demo_video, tmp_path):
     assert result.width == 1080
 
 
+def test_render_clamps_out_of_frame_keyframes(demo_video, tmp_path):
+    """A stale/oversized crop path must never ask ffmpeg for pixels outside the frame."""
+    from src.reframe.tracker import CropKeyframe
+
+    output = tmp_path / "clamped.mp4"
+    result = render_clip(
+        RenderSpec(
+            source=str(demo_video),  # 640x360 fixture
+            output=str(output),
+            start=1.0,
+            end=4.0,
+            mode="vertical",
+            crop_mode="crop",
+            crop_keyframes=[
+                CropKeyframe(time=0, x=9999.0, y=-500.0, width=360.0, height=640.0),
+                CropKeyframe(time=3, x=-80.0, y=20.0, width=4000.0, height=4000.0),
+            ],
+            prefer_hardware=False,
+        )
+    )
+    assert output.is_file()
+    assert output.stat().st_size > 0
+    assert (result.width, result.height) == (1080, 1920)
+
+
+def test_render_blur_ignores_crop_keyframes(demo_video, tmp_path):
+    from src.reframe.tracker import CropKeyframe
+
+    output = tmp_path / "blur-kf.mp4"
+    render_clip(
+        RenderSpec(
+            source=str(demo_video),
+            output=str(output),
+            start=1.0,
+            end=4.0,
+            mode="vertical",
+            crop_mode="blur",
+            crop_keyframes=[CropKeyframe(time=0, x=50.0, y=0.0, width=200.0, height=360.0)],
+            prefer_hardware=False,
+        )
+    )
+    assert output.is_file() and output.stat().st_size > 0
+
+
 def test_render_rejects_bad_ranges(demo_video, tmp_path):
     with pytest.raises(Exception):
         render_clip(
